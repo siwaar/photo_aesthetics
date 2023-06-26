@@ -46,20 +46,22 @@ model = model.to(device)
 model.eval()
 
 test_transform = transforms.Compose([
-    transforms.Resize((256,256)), 
+    transforms.Resize(256), 
     transforms.RandomCrop(224), 
     transforms.ToTensor(), 
     transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                          std=[0.229, 0.224, 0.225])
     ])
 
+testing_imgs  = args.test_images
 test_df = pd.read_csv(args.test_csv, header=None)
-test_imgs = test_df[0]
-pbar = tqdm(total=len(test_imgs))
+images_list = os.listdir(testing_imgs)
+pbar = tqdm(total=len(images_list))
 
 mean, std = 0.0, 0.0
-for i, img in enumerate(test_imgs):
-    im = Image.open(os.path.join(args.test_images, str(img) + '.jpg'))
+for i, img in enumerate(images_list):
+    print("here:", i,img)
+    im = Image.open(os.path.join(args.test_images, str(img)))
     im = im.convert('RGB')
     imt = test_transform(im)
     imt = imt.unsqueeze(dim=0)
