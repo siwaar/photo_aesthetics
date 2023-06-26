@@ -79,7 +79,7 @@ for i, img in enumerate(images_list):
         os.makedirs(args.predictions)
     with open(os.path.join(args.predictions, 'my_pred.txt'), 'a') as f:
         #f.write(str(img) + ' mean: %.3f | std: %.3f\n' % (mean, std))
-        data = {'filename': str(img), 'result': mean}
+        data = {'filename': str(img), 'result': mean.numpy()}
 
         # Append the dictionary as a new row to the dataframe
         df_results = df_results.append(data, ignore_index=True)
