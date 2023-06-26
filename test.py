@@ -54,13 +54,14 @@ test_transform = transforms.Compose([
     ])
 
 testing_imgs  = args.test_images
-test_df = pd.read_csv(args.test_csv, header=None)
+test_df = pd.read_csv(args.test_csv)
 images_list = os.listdir(testing_imgs)
 pbar = tqdm(total=len(images_list))
+df_results = pd.DataFrame(columns=['filename', 'result'])
+
 
 mean, std = 0.0, 0.0
 for i, img in enumerate(images_list):
-    print("here:", i,img)
     im = Image.open(os.path.join(args.test_images, str(img)))
     im = im.convert('RGB')
     imt = test_transform(im)
@@ -77,7 +78,12 @@ for i, img in enumerate(images_list):
     if not os.path.exists(args.predictions):
         os.makedirs(args.predictions)
     with open(os.path.join(args.predictions, 'my_pred.txt'), 'a') as f:
-          f.write(str(img) + ' mean: %.3f | std: %.3f\n' % (mean, std))
+        #f.write(str(img) + ' mean: %.3f | std: %.3f\n' % (mean, std))
+        data = {'filename': str(img), 'result': mean}
+
+        # Append the dictionary as a new row to the dataframe
+        df_results = df_results.append(data, ignore_index=True)
 
     mean, std = 0.0, 0.0
     pbar.update()
+    pd.to_csv(df_results, 'nima_epoch_82_tad_results.csv')
