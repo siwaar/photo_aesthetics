@@ -35,7 +35,7 @@ def main(config):
     writer = SummaryWriter()
 
     train_transform = transforms.Compose([
-        transforms.Scale(256),
+        transforms.Resize((256,256)),
         transforms.RandomCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(), 
@@ -43,7 +43,7 @@ def main(config):
             std=[0.229, 0.224, 0.225])])
 
     val_transform = transforms.Compose([
-        transforms.Scale(256),
+        transforms.Resize((256,256)),
         transforms.RandomCrop(224),
         transforms.ToTensor(), 
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
