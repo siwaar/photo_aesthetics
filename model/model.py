@@ -2,7 +2,7 @@
 file - model.py
 Implements the aesthemic model and emd loss used in paper.
 
-Copyright (C) Yunxiao Shi 2017 - 2021
+Copyright (C) Yunxiao Shi 2017 - 2020
 NIMA is released under the MIT license. See LICENSE for the fill license text.
 """
 
@@ -15,13 +15,14 @@ class NIMA(nn.Module):
     def __init__(self, base_model, num_classes=10):
         super(NIMA, self).__init__()
         self.features = base_model.features
-        self.classifier = base_model.classifier
-        self.classifier[1] = nn.Linear(in_features=self.classifier[1].in_features, out_features=num_classes)
-    
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=0.75),
+            nn.Linear(in_features=25088, out_features=num_classes),
+            nn.Softmax())
 
     def forward(self, x):
-        out = self.features(x.unsqueeze(0))
-        out = out.mean([2, 3])  # Global average pooling
+        out = self.features(x)
+        out = out.view(out.size(0), -1)
         out = self.classifier(out)
         return out
 
