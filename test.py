@@ -86,4 +86,4 @@ for i, img in enumerate(images_list):
 
     mean, std = 0.0, 0.0
     pbar.update()
-    pd.to_csv(df_results, 'nima_epoch_82_tad_results.csv')
+df_results.to_csv('nima_epoch_82_tad_results.csv')
