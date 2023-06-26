@@ -77,13 +77,12 @@ for i, img in enumerate(images_list):
     std = std ** 0.5
     if not os.path.exists(args.predictions):
         os.makedirs(args.predictions)
-    with open(os.path.join(args.predictions, 'my_pred.txt'), 'a') as f:
-        #f.write(str(img) + ' mean: %.3f | std: %.3f\n' % (mean, std))
-        data = {'filename': str(img), 'result': mean.cpu()}
+    
+    data = {'filename': str(img), 'result': mean.cpu()}
 
-        # Append the dictionary as a new row to the dataframe
-        df_results = df_results.append(data, ignore_index=True)
+    # Append the dictionary as a new row to the dataframe
+    df_results = df_results.append(data, ignore_index=True)
 
     mean, std = 0.0, 0.0
     pbar.update()
-df_results.to_csv('nima_epoch_82_tad_results.csv', index=False)
+df_results.to_csv(args.predictions+'nima_epoch_82_tad_results.csv', index=False)
