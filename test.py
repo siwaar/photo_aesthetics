@@ -59,7 +59,8 @@ for i,img in enumerate(images_list):
     imt = test_transform(im)
     imt = imt.to(device)
     with torch.no_grad():
-        imt = imt.unsqueeze(0).unsqueeze(0)  # Add batch and channel dimensions
+        imt = imt.unsqueeze(0)  # Add channel dimensions
+        imt = imt.permute(1, 0, 2, 3)  # Rearrange the dimensions
         out = model(imt)
     out = out.view(10, 1)
     for j, e in enumerate(out, 1):
