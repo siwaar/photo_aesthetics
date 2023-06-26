@@ -46,7 +46,7 @@ model = model.to(device)
 model.eval()
 
 test_transform = transforms.Compose([
-    transforms.resize((256,256)), 
+    transforms.Resize((256,256)), 
     transforms.RandomCrop(224), 
     transforms.ToTensor(), 
     transforms.Normalize(mean=[0.485, 0.456, 0.406], 
