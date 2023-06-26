@@ -51,7 +51,7 @@ test_transform = transforms.Compose([
     transforms.ToTensor()
     ])
 
-test_df = pd.read_csv(args.test_csv, header=None)
+test_df = pd.read_csv(args.test_csv)
 test_imgs = test_df[0]
 pbar = tqdm(total=len(test_imgs))
 
