@@ -52,7 +52,7 @@ mean, std = 0.0, 0.0
 
 for i,img in enumerate(images_list):
     print("here:", i,img)
-    path_im = os.path.join('accor_images/', str(img))
+    path_im = os.path.join(args.test_images, str(img))
     print(path_im)
     im = Image.open(path_im) #the path to the folder with images
     im = im.convert('RGB')
