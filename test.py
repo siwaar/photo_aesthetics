@@ -74,14 +74,10 @@ for i, img in enumerate(images_list):
     for k, e in enumerate(out, 1):
         std += e * (k - mean) ** 2
     std = std ** 0.5
-    gt = test_df[test_df[0] == img].to_numpy()[:, 1:].reshape(10, 1)
-    gt_mean = 0.0
-    for l, e in enumerate(gt, 1):
-        gt_mean += l * e
-    # print(str(img) + ' mean: %.3f | std: %.3f | GT: %.3f' % (mean, std, gt_mean))
     if not os.path.exists(args.predictions):
         os.makedirs(args.predictions)
-    with open(os.path.join(args.predictions, 'pred.txt'), 'a') as f:
-        f.write(str(img) + ' mean: %.3f | std: %.3f | GT: %.3f\n' % (mean, std, gt_mean))
+    with open(os.path.join(args.predictions, 'my_pred.txt'), 'a') as f:
+          f.write(str(img) + ' mean: %.3f | std: %.3f\n' % (mean, std))
+
     mean, std = 0.0, 0.0
     pbar.update()
