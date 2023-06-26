@@ -24,7 +24,7 @@ model = NIMA(mobilenet)
 
 try:
     device = torch.device('cpu')
-    model.load_state_dict(torch.load(args.model, map_location=device))
+    model.load_state_dict(torch.load(args.model, map_location=device), strict=False)
     print('successfully loaded model')
 except:
     raise

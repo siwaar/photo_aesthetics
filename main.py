@@ -28,9 +28,6 @@ from dataset.dataset import AVADataset
 
 from model.model import *
 
-def collate_fn(batch):
-    batch = list(filter(lambda x: x is not None, batch))
-    return batch
 
 def main(config):
 
@@ -38,7 +35,7 @@ def main(config):
     writer = SummaryWriter()
 
     train_transform = transforms.Compose([
-        transforms.Resize((256, 256)),
+        transforms.Scale(256),
         transforms.RandomCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(), 
@@ -46,17 +43,14 @@ def main(config):
             std=[0.229, 0.224, 0.225])])
 
     val_transform = transforms.Compose([
-        transforms.Resize((256, 256)),
+        transforms.Scale(256),
         transforms.RandomCrop(224),
         transforms.ToTensor(), 
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
             std=[0.229, 0.224, 0.225])])
 
-    mobilenet = models.mobilenet_v2(pretrained=False)
-    weights_path = 'model_files/weights_mobilenet_technical_0.11.hdf5'
-    state_dict = torch.load(weights_path)
-    mobilenet.load_state_dict(state_dict)
-    model = NIMA(mobilenet)
+    base_model = models.vgg16(pretrained=True)
+    model = NIMA(base_model)
 
     if config.warm_start:
         model.load_state_dict(torch.load(os.path.join(config.ckpt_path, 'epoch-%d.pth' % config.warm_start_epoch)))
@@ -86,9 +80,9 @@ def main(config):
         trainset = AVADataset(csv_file=config.train_csv_file, root_dir=config.img_path, transform=train_transform)
         valset = AVADataset(csv_file=config.val_csv_file, root_dir=config.img_path, transform=val_transform)
 
-        train_loader = torch.utils.data.DataLoader(trainset, collate_fn=collate_fn, batch_size=config.train_batch_size,
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=config.train_batch_size,
             shuffle=True, num_workers=config.num_workers)
-        val_loader = torch.utils.data.DataLoader(valset, collate_fn=collate_fn, batch_size=config.val_batch_size,
+        val_loader = torch.utils.data.DataLoader(valset, batch_size=config.val_batch_size,
             shuffle=False, num_workers=config.num_workers)
         # for early stopping
         count = 0
@@ -97,24 +91,23 @@ def main(config):
         val_losses = []
         for epoch in range(config.warm_start_epoch, config.epochs):
             batch_losses = []
-            for i, data_batch in enumerate(train_loader):
-                for data in data_batch :
-                    images = data['image'].to(device)
-                    labels = torch.from_numpy(data['annotations']).to(device).float()
-                    outputs = model(images)
-                    outputs = outputs.view(-1, 10, 1)
+            for i, data in enumerate(train_loader):
+                images = data['image'].to(device)
+                labels = data['annotations'].to(device).float()
+                outputs = model(images)
+                outputs = outputs.view(-1, 10, 1)
 
-                    optimizer.zero_grad()
+                optimizer.zero_grad()
 
-                    loss = emd_loss(labels, outputs[0])
-                    batch_losses.append(loss.item())
+                loss = emd_loss(labels, outputs)
+                batch_losses.append(loss.item())
 
-                    loss.backward()
+                loss.backward()
 
-                    optimizer.step()
+                optimizer.step()
 
-                    print('Epoch: %d/%d | Step: %d/%d | Training EMD loss: %.4f' % (epoch + 1, config.epochs, i + 1, len(trainset) // config.train_batch_size + 1, loss.data))
-                    writer.add_scalar('batch train loss', loss.data, i + epoch * (len(trainset) // config.train_batch_size + 1))
+                print('Epoch: %d/%d | Step: %d/%d | Training EMD loss: %.4f' % (epoch + 1, config.epochs, i + 1, len(trainset) // config.train_batch_size + 1, loss.data[0]))
+                writer.add_scalar('batch train loss', loss.data[0], i + epoch * (len(trainset) // config.train_batch_size + 1))
 
             avg_loss = sum(batch_losses) / (len(trainset) // config.train_batch_size + 1)
             train_losses.append(avg_loss)
@@ -133,15 +126,14 @@ def main(config):
 
             # do validation after each epoch
             batch_val_losses = []
-            for data_batch in val_loader:
-                for data in data_batch :
-                    images = data['image'].to(device)
-                    labels = data['annotations'].to(device).float()
-                    with torch.no_grad():
-                        outputs = model(images)
-                    outputs = outputs.view(-1, 10, 1)
-                    val_loss = emd_loss(labels, outputs[0])
-                    batch_val_losses.append(val_loss.item())
+            for data in val_loader:
+                images = data['image'].to(device)
+                labels = data['annotations'].to(device).float()
+                with torch.no_grad():
+                    outputs = model(images)
+                outputs = outputs.view(-1, 10, 1)
+                val_loss = emd_loss(labels, outputs)
+                batch_val_losses.append(val_loss.item())
             avg_val_loss = sum(batch_val_losses) / (len(valset) // config.val_batch_size + 1)
             val_losses.append(avg_val_loss)
             print('Epoch %d completed. Mean EMD loss on val set: %.4f.' % (epoch + 1, avg_val_loss))
@@ -183,7 +175,7 @@ def main(config):
         # compute mean score
         test_transform = val_transform
         testset = AVADataset(csv_file=config.test_csv_file, root_dir=config.img_path, transform=val_transform)
-        test_loader = torch.utils.data.DataLoader(testset, collate_fn=collate_fn, batch_size=config.test_batch_size, shuffle=False, num_workers=config.num_workers)
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=config.test_batch_size, shuffle=False, num_workers=config.num_workers)
 
         mean_preds = []
         std_preds = []

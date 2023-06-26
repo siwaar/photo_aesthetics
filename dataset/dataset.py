@@ -11,6 +11,7 @@ import os
 import pandas as pd
 from PIL import Image
 
+import torch
 from torch.utils import data
 import torchvision.transforms as transforms
 
@@ -33,19 +34,16 @@ class AVADataset(data.Dataset):
         return len(self.annotations)
 
     def __getitem__(self, idx):
-        try:
-            img_name = os.path.join(self.root_dir, str(self.annotations.iloc[idx, 0]) + '.jpg')
-            image = Image.open(img_name).convert('RGB')
-            annotations = self.annotations.iloc[idx, 1:].to_numpy()
-            annotations = annotations.astype('float').reshape(-1, 1)
-            sample = {'img_id': img_name, 'image': image, 'annotations': annotations}
+        img_name = os.path.join(self.root_dir, str(self.annotations.iloc[idx, 0]) + '.jpg')
+        image = Image.open(img_name).convert('RGB')
+        annotations = self.annotations.iloc[idx, 1:].to_numpy()
+        annotations = annotations.astype('float').reshape(-1, 1)
+        sample = {'img_id': img_name, 'image': image, 'annotations': annotations}
 
-            if self.transform:
-                sample['image'] = self.transform(sample['image'])
+        if self.transform:
+            sample['image'] = self.transform(sample['image'])
 
-            return sample
-        except:
-            return None
+        return sample
 
 
 if __name__ == '__main__':
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     root = './data/images'
     csv_file = './data/train_labels.csv'
     train_transform = transforms.Compose([
-        transforms.Resize(256), 
+        transforms.Scale(256), 
         transforms.RandomCrop(224), 
         transforms.RandomHorizontalFlip(), 
         transforms.ToTensor(), 
