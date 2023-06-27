@@ -54,7 +54,6 @@ test_transform = transforms.Compose([
     ])
 
 testing_imgs  = args.test_images
-test_df = pd.read_csv(args.test_csv)
 images_list = os.listdir(testing_imgs)
 pbar = tqdm(total=len(images_list))
 df_results = pd.DataFrame(columns=['filename', 'result'])

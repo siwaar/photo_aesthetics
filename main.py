@@ -11,15 +11,12 @@ import os
 
 import numpy as np
 import matplotlib
-# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import torch
-import torch.autograd as autograd
 import torch.optim as optim
 
 import torchvision.transforms as transforms
-import torchvision.datasets as dsets
 import torchvision.models as models
 
 from torch.utils.tensorboard import SummaryWriter
@@ -35,7 +32,7 @@ def main(config):
     writer = SummaryWriter()
 
     train_transform = transforms.Compose([
-        transforms.Resize((256,256)),
+        transforms.Resize(256),
         transforms.RandomCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(), 
@@ -43,7 +40,7 @@ def main(config):
             std=[0.229, 0.224, 0.225])])
 
     val_transform = transforms.Compose([
-        transforms.Resize((256,256)),
+        transforms.Resize(256),
         transforms.RandomCrop(224),
         transforms.ToTensor(), 
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 

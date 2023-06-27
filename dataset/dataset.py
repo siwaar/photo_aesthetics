@@ -52,7 +52,7 @@ if __name__ == '__main__':
     root = './data/images'
     csv_file = './data/train_labels.csv'
     train_transform = transforms.Compose([
-        transforms.Resize((256,256)), 
+        transforms.Resize(256), 
         transforms.RandomCrop(224), 
         transforms.RandomHorizontalFlip(), 
         transforms.ToTensor(), 
