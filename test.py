@@ -74,8 +74,6 @@ for i, img in enumerate(images_list):
     for k, e in enumerate(out, 1):
         std += e * (k - mean) ** 2
     std = std ** 0.5
-    if not os.path.exists(args.predictions):
-        os.makedirs(args.predictions)
     
     data = {'filename': str(img), 'result': mean.cpu().numpy()[0]}
 
@@ -84,4 +82,4 @@ for i, img in enumerate(images_list):
 
     mean, std = 0.0, 0.0
     pbar.update()
-df_results.to_csv(os.path.join(args.predictions, 'nima_epoch_82_tad_results.csv'), index=False)
+df_results.to_csv(os.path.join(args.predictions), index=False)
